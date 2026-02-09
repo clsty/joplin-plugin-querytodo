@@ -1,5 +1,6 @@
 import joplin from 'api';
 import { Note, Summary, SummaryMap } from './types';
+import { hasQuerySummary } from './query_summary';
 
 const summary_regex = /<!-- inline-todo-plugin(.*)-->/gm;
 
@@ -87,5 +88,6 @@ function parseNotebookNames(nbs: string): string[] {
 }
 
 export function isSummary(currentNote: Note): boolean {
-	return !!currentNote?.body.match(summary_regex);
+	// Check for either regular summary or query summary
+	return !!currentNote?.body.match(summary_regex) || hasQuerySummary(currentNote?.body);
 }

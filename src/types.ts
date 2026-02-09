@@ -153,3 +153,57 @@ export interface WebviewApi {
 	onMessage(handler:WebviewApiOnMessageHandler);
 	menuPopupFromTemplate(template:any[]);
 }
+
+// Query Summary Note Types
+export type QueryItemType = 'CATEGORY' | 'TAG' | 'NOTE' | 'NOTEBOOK' | 'STATUS' | 'AND' | 'OR';
+
+export interface BaseQueryItem {
+	negated?: boolean;
+}
+
+export interface CategoryQuery extends BaseQueryItem {
+	CATEGORY: string;
+}
+
+export interface TagQuery extends BaseQueryItem {
+	TAG: string;
+}
+
+export interface NoteQuery extends BaseQueryItem {
+	NOTE: string;
+}
+
+export interface NotebookQuery extends BaseQueryItem {
+	NOTEBOOK: string;
+	recursive?: boolean;
+}
+
+export interface StatusQuery extends BaseQueryItem {
+	STATUS: string;
+}
+
+export interface AndQuery {
+	AND: QueryItem[];
+}
+
+export interface OrQuery {
+	OR: QueryItem[];
+}
+
+export type QueryItem = CategoryQuery | TagQuery | NoteQuery | NotebookQuery | StatusQuery | AndQuery | OrQuery;
+
+export type SortBy = 'tag' | 'category' | 'date' | 'status';
+export type SortOrder = 'ascend' | 'descend' | 'custom';
+
+export interface SortOption {
+	sortLevel: string;
+	sortBy: SortBy;
+	sortOrder: SortOrder;
+	sortOrderCustom?: string;
+}
+
+export interface QuerySummaryConfig {
+	query: QueryItem;
+	sortOptions?: SortOption[];
+	groupLevel?: number;
+}

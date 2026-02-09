@@ -1,10 +1,18 @@
 import joplin from 'api';
-import { Settings, Summary } from './types';
+import { Settings, Summary, SummaryMap, Todo } from './types';
 import { summaries } from './settings_tables';
 import { insertNewSummary, filterSummaryCategories } from './summary_note';
+import { hasQuerySummary, parseQuerySummary, filterTodosByQuery, generateQuerySummaryBody } from './query_summary';
 // import { icalBlock } from './ical';
 
 export async function update_summary(summary: Summary, settings: Settings, summary_id: string, old_body: string) {
+	// Check if this is a query summary note
+	if (hasQuerySummary(old_body)) {
+		await updateQuerySummary(summary, settings, summary_id, old_body);
+		return;
+	}
+
+	// Original behavior for regular summaries
 	const bodyFunc = summaries[settings.summary_type].func;
 
 	// Use the summary special comment to filter the todos for this summary note
@@ -17,6 +25,75 @@ export async function update_summary(summary: Summary, settings: Settings, summa
 	// }
 
 	await setSummaryBody(summaryBody, summary_id, old_body, settings);
+}
+
+async function updateQuerySummary(summary: Summary, settings: Settings, summary_id: string, old_body: string) {
+	const config = parseQuerySummary(old_body);
+	
+	if (!config || !config.query) {
+		console.error("Invalid query summary configuration");
+		return;
+	}
+	
+	// Flatten all todos from the summary map
+	const allTodos: Todo[] = [];
+	for (const todos of Object.values(summary.map)) {
+		allTodos.push(...todos);
+	}
+	
+	// Filter todos based on the query
+	const filteredTodos = await filterTodosByQuery(allTodos, config.query);
+	
+	// Generate the summary body with sorting and grouping
+	const summaryBody = generateQuerySummaryBody(
+		filteredTodos, 
+		config.sortOptions || [], 
+		config.groupLevel || 0
+	);
+	
+	await setQuerySummaryBody(summaryBody, summary_id, old_body, settings);
+}
+
+async function setQuerySummaryBody(summaryBody: string, summary_id: string, old_body: string, settings: Settings) {
+	// For query summaries, we need to insert the body before the JSON query block
+	const queryRegex = /```json:query-summary\s*\n[\s\S]*?\n```/gm;
+	const parts = old_body.split(queryRegex);
+	const queryMatch = old_body.match(queryRegex);
+	
+	if (!queryMatch) {
+		console.error("Query summary block not found in note body");
+		return;
+	}
+	
+	// Reconstruct: summary body + query block + rest of content
+	const body = summaryBody + '\n' + queryMatch[0] + (parts[1] || '');
+	
+	// Only update the note if it actually changed...
+	if (old_body === body) { return; }
+
+	// https://github.com/laurent22/joplin/issues/5955
+	const currentNote = await joplin.workspace.selectedNote();
+	// Don't immediately swap the text when the custom_editor is enabled, it's not necessary
+	// and can cause unrelated notes to be overwritten in some situations
+	// https://github.com/laurent22/joplin/issues/11721
+	if (!settings.custom_editor && currentNote && currentNote.id == summary_id) {
+		try {
+			await joplin.commands.execute('editor.setText', body);
+		} catch (error) {
+			console.warn("Could not update summary note with editor.setText: " + summary_id);
+			console.error(error);
+		}
+	}
+
+	await joplin.data.put(['notes', summary_id], null, { body: body })
+			.catch((error) => {
+				console.error(error);
+				console.warn("Could not update summary note with api: " + summary_id);
+			});
+
+	if (settings.force_sync) {
+		await joplin.commands.execute('synchronize');
+	}
 }
 
 async function setSummaryBody(summaryBody: string, summary_id: string, old_body: string, settings: Settings) {
