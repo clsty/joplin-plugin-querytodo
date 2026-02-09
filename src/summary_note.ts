@@ -23,6 +23,33 @@ export async function createSummaryNote() {
 			});
 }
 
+export async function createQuerySummaryNote() {
+	const par = await joplin.workspace.selectedFolder();
+	if (!par) {
+		console.error("Cannot create query summary note: no folder selected");
+		return;
+	}
+	
+	const defaultQueryBody = `\`\`\`json:query-summary
+{
+	"query": {
+		"STATUS": "open"
+	},
+	"entryFormat": "- {{{STATUS}}} {{{CATEGORY}}} {{{TAGS}}} {{{DATE}}} {{{CONTENT}}} [origin](:/{{{NOTE_ID}}})"
+}
+\`\`\`
+`;
+	
+	await joplin.data.post(['notes'], null, {
+		title: 'Query Summary', 
+		parent_id: par.id, 
+		body: defaultQueryBody
+	}).catch((error) => {
+		console.error(error);
+		console.warn("Could not create query summary note with api in notebook: " + par.id);
+	});
+}
+
 export function insertNewSummary(old_body: string, summaryBody: string): string {
 	// Preserve the content after the hr
 	const spl = old_body.split(summary_regex);

@@ -563,7 +563,7 @@ Some other content`;
 
 	describe('generateQuerySummaryBody', () => {
 		test('returns "All done!" for empty todos', () => {
-			const body = generateQuerySummaryBody([], [], 0);
+			const body = generateQuerySummaryBody([], [], 0, undefined);
 			expect(body).toContain('All done!');
 		});
 
@@ -573,7 +573,7 @@ Some other content`;
 				createTodo({ category: 'personal', msg: 'Task 2', completed: false }),
 			];
 
-			const body = generateQuerySummaryBody(todos, [], 0);
+			const body = generateQuerySummaryBody(todos, [], 0, undefined);
 
 			expect(body).toContain('- [ ]');
 			expect(body).toContain('@work');
@@ -595,7 +595,7 @@ Some other content`;
 				},
 			];
 
-			const body = generateQuerySummaryBody(todos, sortOptions, 1);
+			const body = generateQuerySummaryBody(todos, sortOptions, 1, undefined);
 
 			expect(body).toContain('# personal');
 			expect(body).toContain('# work');
@@ -621,7 +621,7 @@ Some other content`;
 				},
 			];
 
-			const body = generateQuerySummaryBody(todos, sortOptions, 2);
+			const body = generateQuerySummaryBody(todos, sortOptions, 2, undefined);
 
 			expect(body).toContain('# personal');
 			expect(body).toContain('## urgent');
@@ -634,7 +634,7 @@ Some other content`;
 				createTodo({ category: 'work', msg: 'Done task', completed: true }),
 			];
 
-			const body = generateQuerySummaryBody(todos, [], 0);
+			const body = generateQuerySummaryBody(todos, [], 0, undefined);
 
 			expect(body).toContain('- [x]');
 		});
@@ -644,7 +644,7 @@ Some other content`;
 				createTodo({ category: 'work', tags: ['urgent', 'important'], msg: 'Task', completed: false }),
 			];
 
-			const body = generateQuerySummaryBody(todos, [], 0);
+			const body = generateQuerySummaryBody(todos, [], 0, undefined);
 
 			expect(body).toContain('+urgent');
 			expect(body).toContain('+important');
@@ -655,7 +655,7 @@ Some other content`;
 				createTodo({ category: 'work', date: '2026-01-23', msg: 'Task', completed: false }),
 			];
 
-			const body = generateQuerySummaryBody(todos, [], 0);
+			const body = generateQuerySummaryBody(todos, [], 0, undefined);
 
 			expect(body).toContain('//2026-01-23');
 		});

@@ -319,22 +319,79 @@ function groupTodosByKey(todos: Todo[], sortBy: SortBy): Map<string, Todo[]> {
 }
 
 /**
- * Formats a single todo for output
+ * Formats a single todo for output using a template
+ * Template placeholders:
+ * - {{{STATUS}}} -> [ ] or [x]
+ * - {{{CATEGORY}}} -> @category
+ * - {{{TAGS}}} -> +tag1 +tag2
+ * - {{{DATE}}} -> //YYYY-MM-DD
+ * - {{{CONTENT}}} -> the todo message
+ * - {{{NOTE_ID}}} -> the note id
+ * - {{{NOTE_TITLE}}} -> the note title
+ * - {{{NOTEBOOK}}} -> the parent notebook
  */
-function formatTodo(todo: Todo): string {
-	const checkbox = todo.completed ? '[x]' : '[ ]';
-	const category = todo.category ? `@${todo.category}` : '';
-	const tags = todo.tags ? todo.tags.map(t => `+${t}`).join(' ') : '';
-	const date = todo.date ? `//${todo.date}` : '';
+function formatTodo(todo: Todo, template?: string): string {
+	// Default template if not provided
+	if (!template) {
+		const checkbox = todo.completed ? '[x]' : '[ ]';
+		const category = todo.category ? `@${todo.category}` : '';
+		const tags = todo.tags ? todo.tags.map(t => `+${t}`).join(' ') : '';
+		const date = todo.date ? `//${todo.date}` : '';
+		
+		const parts = [checkbox, category, tags, date, todo.msg].filter(p => p);
+		return `- ${parts.join(' ')}`;
+	}
 	
-	const parts = [checkbox, category, tags, date, todo.msg].filter(p => p);
-	return `- ${parts.join(' ')}`;
+	// Use template
+	let result = template;
+	
+	// Replace STATUS
+	const status = todo.completed ? '[x]' : '[ ]';
+	result = result.replace(/\{\{\{STATUS\}\}\}/g, status);
+	
+	// Replace CATEGORY
+	const category = todo.category ? `@${todo.category}` : '';
+	result = result.replace(/\{\{\{CATEGORY\}\}\}/g, category);
+	
+	// Replace TAGS
+	const tags = todo.tags && todo.tags.length > 0 
+		? todo.tags.map(t => `+${t}`).join(' ') 
+		: '';
+	result = result.replace(/\{\{\{TAGS\}\}\}/g, tags);
+	
+	// Replace DATE
+	const date = todo.date ? `//${todo.date}` : '';
+	result = result.replace(/\{\{\{DATE\}\}\}/g, date);
+	
+	// Replace CONTENT
+	const content = todo.msg || '';
+	result = result.replace(/\{\{\{CONTENT\}\}\}/g, content);
+	
+	// Replace NOTE_ID
+	const noteId = todo.note || '';
+	result = result.replace(/\{\{\{NOTE_ID\}\}\}/g, noteId);
+	
+	// Replace NOTE_TITLE
+	const noteTitle = todo.note_title || '';
+	result = result.replace(/\{\{\{NOTE_TITLE\}\}\}/g, noteTitle);
+	
+	// Replace NOTEBOOK
+	const notebook = todo.parent_title || '';
+	result = result.replace(/\{\{\{NOTEBOOK\}\}\}/g, notebook);
+	
+	// Clean up extra spaces (but preserve intentional spaces in template)
+	result = result.replace(/\s+/g, ' ').trim();
+	
+	// Handle escaped newlines
+	result = result.replace(/\\n/g, '\n');
+	
+	return result;
 }
 
 /**
  * Generates the summary body from sorted and grouped todos
  */
-export function generateQuerySummaryBody(todos: Todo[], sortOptions: SortOption[], groupLevel: number): string {
+export function generateQuerySummaryBody(todos: Todo[], sortOptions: SortOption[], groupLevel: number, entryFormat?: string): string {
 	if (todos.length === 0) {
 		return '# All done!\n\n';
 	}
@@ -344,7 +401,7 @@ export function generateQuerySummaryBody(todos: Todo[], sortOptions: SortOption[
 	
 	// If no grouping, just output all todos
 	if (!sortOptions || sortOptions.length === 0 || groupLevel < 1) {
-		return sortedTodos.map(formatTodo).join('\n') + '\n';
+		return sortedTodos.map(todo => formatTodo(todo, entryFormat)).join('\n') + '\n';
 	}
 	
 	// Group by levels
@@ -355,7 +412,7 @@ export function generateQuerySummaryBody(todos: Todo[], sortOptions: SortOption[
 	function buildHierarchy(todos: Todo[], level: number): string {
 		if (level > groupLevel || level > sortedOptions.length) {
 			// No more grouping, just list todos
-			return todos.map(formatTodo).join('\n') + '\n';
+			return todos.map(todo => formatTodo(todo, entryFormat)).join('\n') + '\n';
 		}
 		
 		const sortOption = sortedOptions[level - 1];

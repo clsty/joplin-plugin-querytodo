@@ -206,4 +206,5 @@ export interface QuerySummaryConfig {
 	query: QueryItem;
 	sortOptions?: SortOption[];
 	groupLevel?: number;
+	entryFormat?: string;
 }

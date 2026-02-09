@@ -44,20 +44,23 @@ async function updateQuerySummary(summary: Summary, settings: Settings, summary_
 	// Filter todos based on the query
 	const filteredTodos = await filterTodosByQuery(allTodos, config.query);
 	
-	// Generate the summary body with sorting and grouping
+	// Get entryFormat from config or use default
+	const entryFormat = config.entryFormat || '- {{{STATUS}}} {{{CATEGORY}}} {{{TAGS}}} {{{DATE}}} {{{CONTENT}}} [origin](:/{{{NOTE_ID}}})';
+	
+	// Generate the summary body with sorting, grouping, and custom format
 	const summaryBody = generateQuerySummaryBody(
 		filteredTodos, 
 		config.sortOptions || [], 
-		config.groupLevel || 0
+		config.groupLevel || 0,
+		entryFormat
 	);
 	
 	await setQuerySummaryBody(summaryBody, summary_id, old_body, settings);
 }
 
 async function setQuerySummaryBody(summaryBody: string, summary_id: string, old_body: string, settings: Settings) {
-	// For query summaries, we need to insert the body before the JSON query block
+	// For query summaries, we need to clear content BEFORE the query block and insert new summary
 	const queryRegex = /```json:query-summary\s*\n[\s\S]*?\n```/gm;
-	const parts = old_body.split(queryRegex);
 	const queryMatch = old_body.match(queryRegex);
 	
 	if (!queryMatch) {
@@ -65,8 +68,16 @@ async function setQuerySummaryBody(summaryBody: string, summary_id: string, old_
 		return;
 	}
 	
-	// Reconstruct: summary body + query block + rest of content
-	const body = summaryBody + '\n' + queryMatch[0] + (parts[1] || '');
+	// Find the position of the query block
+	const queryBlockIndex = old_body.indexOf(queryMatch[0]);
+	
+	// Get content after the query block (to preserve)
+	const afterQueryIndex = queryBlockIndex + queryMatch[0].length;
+	const afterContent = old_body.substring(afterQueryIndex);
+	
+	// Reconstruct: summary body + query block + content after query block
+	// This clears any previous content before the query block, fixing the duplicate issue
+	const body = summaryBody + '\n' + queryMatch[0] + afterContent;
 	
 	// Only update the note if it actually changed...
 	if (old_body === body) { return; }
