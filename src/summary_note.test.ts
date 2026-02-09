@@ -3,17 +3,25 @@ import { createSummary, createSummaryMap, createTodo, createNote } from './__tes
 
 describe('summary_note', () => {
 	describe('isSummary', () => {
-		test('identifies note with inline-todo-plugin comment', () => {
+		test('returns false for note with inline-todo-plugin comment (regular summaries not supported)', () => {
 			const note = createNote({
 				body: '# My Summary\n\n<!-- inline-todo-plugin -->\n\nSome content'
 			});
 
-			expect(isSummary(note)).toBe(true);
+			expect(isSummary(note)).toBe(false);
 		});
 
-		test('identifies note with inline-todo-plugin comment and filter', () => {
+		test('returns false for note with inline-todo-plugin comment and filter (regular summaries not supported)', () => {
 			const note = createNote({
 				body: '# My Summary\n\n<!-- inline-todo-plugin "Work" "Personal" -->\n\nSome content'
+			});
+
+			expect(isSummary(note)).toBe(false);
+		});
+
+		test('identifies note with query-summary block', () => {
+			const note = createNote({
+				body: '```json:query-summary\n{"query": {}}\n```'
 			});
 
 			expect(isSummary(note)).toBe(true);

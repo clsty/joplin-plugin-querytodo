@@ -118,6 +118,6 @@ function parseNotebookNames(nbs: string): string[] {
 }
 
 export function isSummary(currentNote: Note): boolean {
-	// Check for either regular summary or query summary
-	return !!currentNote?.body.match(summary_regex) || hasQuerySummary(currentNote?.body);
+	// Only query summaries are supported
+	return hasQuerySummary(currentNote?.body);
 }
