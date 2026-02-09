@@ -258,18 +258,11 @@ joplin.plugins.register({
 			}
 		});
 
-		// Create toolbar button for query summaries - hidden by default
+		// Create toolbar button for query summaries - visibility will be controlled dynamically
 		await joplin.views.toolbarButtons.create(
 			"refreshQuerySummaryToolbarButton",
 			"inlineTodo.refreshQuerySummary",
 			ToolbarButtonLocation.EditorToolbar
-		);
-		
-		// Initially hide the button
-		await joplin.views.toolbarButtons.setProperty(
-			"refreshQuerySummaryToolbarButton",
-			"visible",
-			false
 		);
 
 		// Function to update toolbar button visibility
@@ -352,26 +345,17 @@ joplin.plugins.register({
 					const config = parseQuerySummary(currentNote.body);
 					
 					if (config) {
-						console.log('[Query TODO] Query summary detected, config:', JSON.stringify({
-							openReload: config.openReload,
-							reloadPeriodSecond: config.reloadPeriodSecond,
-							forceSyncWhenReload: config.forceSyncWhenReload
-						}));
-						
 						// Handle openReload (default is false)
 						if (config.openReload === true) {
-							console.log('[Query TODO] Executing openReload refresh');
 							await refreshQuerySummaryNote(currentNote.id, currentNote.body);
 						}
 						
 						// Setup periodic reload if configured
 						if (config.reloadPeriodSecond && config.reloadPeriodSecond > 0) {
-							console.log('[Query TODO] Setting up periodic reload every', config.reloadPeriodSecond, 'seconds');
 							setupPeriodicReload(currentNote.id, currentNote.body, config.reloadPeriodSecond);
 						} else {
 							// Clear any existing timer for this note
 							if (reloadTimers.has(currentNote.id)) {
-								console.log('[Query TODO] Clearing periodic reload timer');
 								clearInterval(reloadTimers.get(currentNote.id)!);
 								reloadTimers.delete(currentNote.id);
 							}
