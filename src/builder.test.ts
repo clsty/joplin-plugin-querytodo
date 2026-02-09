@@ -455,4 +455,84 @@ describe('SummaryBuilder', () => {
 			expect(summary.map['note-1'][0].msg).toBe('Simple task');
 		});
 	});
+
+	describe('summary note exclusion', () => {
+		test('skips regular summary notes with inline-todo-plugin comment', async () => {
+			const note = createNote({
+				id: 'summary-note',
+				body: `# Summary
+
+- [ ] Task from note 1 @work
+
+<!-- inline-todo-plugin -->`,
+			});
+
+			joplinAPI.data.get.mockResolvedValue({ title: 'Test Folder' });
+
+			await builder.search_in_note(note);
+			const summary = builder.summary;
+
+			// Should not extract TODOs from summary notes
+			expect(summary.map['summary-note']).toBeUndefined();
+		});
+
+		test('skips query summary notes with json:query-summary block', async () => {
+			const note = createNote({
+				id: 'query-note',
+				body: `# Query Summary
+
+- [ ] Task from query result @work
+
+\`\`\`json:query-summary
+{
+  "query": {
+    "STATUS": "open"
+  }
+}
+\`\`\``,
+			});
+
+			joplinAPI.data.get.mockResolvedValue({ title: 'Test Folder' });
+
+			await builder.search_in_note(note);
+			const summary = builder.summary;
+
+			// Should not extract TODOs from query summary notes
+			expect(summary.map['query-note']).toBeUndefined();
+		});
+
+		test('extracts TODOs from regular notes (not summary notes)', async () => {
+			const note = createNote({
+				id: 'regular-note',
+				body: '- [ ] Regular task @work',
+			});
+
+			joplinAPI.data.get.mockResolvedValue({ title: 'Test Folder' });
+
+			await builder.search_in_note(note);
+			const summary = builder.summary;
+
+			// Should extract TODOs from regular notes
+			expect(summary.map['regular-note']).toHaveLength(1);
+			expect(summary.map['regular-note'][0].msg).toBe('Regular task');
+		});
+
+		test('skips notes with inline-todo-plugin comment regardless of TODO content', async () => {
+			const note = createNote({
+				id: 'summary-with-todos',
+				body: `- [ ] Task 1 @work
+- [ ] Task 2 @personal
+<!-- inline-todo-plugin "Work" -->
+Some other content`,
+			});
+
+			joplinAPI.data.get.mockResolvedValue({ title: 'Test Folder' });
+
+			await builder.search_in_note(note);
+			const summary = builder.summary;
+
+			// Should not extract any TODOs from this summary note
+			expect(summary.map['summary-with-todos']).toBeUndefined();
+		});
+	});
 });

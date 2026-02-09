@@ -19,6 +19,20 @@ export class SummaryBuilder {
 	async search_in_note(note: Note): Promise<boolean> {
 		// Conflict notes are duplicates usually
 		if (note.is_conflict) { return; }
+		
+		// Skip summary notes to avoid self-referencing
+		// Check for regular summary notes (with <!-- inline-todo-plugin comment)
+		const summary_regex = /<!-- inline-todo-plugin(.*)-->/gm;
+		if (summary_regex.test(note.body)) {
+			return;
+		}
+		
+		// Check for query summary notes (with ```json:query-summary block)
+		const query_summary_regex = /```json:query-summary\s*\n/;
+		if (query_summary_regex.test(note.body)) {
+			return;
+		}
+		
 		const matches = [];
 		// This introduces a small risk of a race condition
 		// (If this is waiting, the note.body could become stale, but this function would
