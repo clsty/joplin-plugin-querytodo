@@ -207,4 +207,7 @@ export interface QuerySummaryConfig {
 	sortOptions?: SortOption[];
 	groupLevel?: number;
 	entryFormat?: string;
+	openReload?: boolean;
+	reloadPeriodSecond?: number;
+	forceSyncWhenReload?: boolean;
 }

@@ -1,167 +1,185 @@
-# Inline TODOs
-A plugin that allows you to manage your TODOs anywhere in your notes and view a summary in one place.
+# Query TODO
 
-This plugin was initially written before the plugin system and interacted with Joplin through the API. I've been using it like that for the last few years. I finally took the time to translate it for the official Plugin system. Its implementation is pretty specific to my workflow and I don't plan to update it much, as it works for me.
+Advanced TODO management for Joplin with JSON-based query summaries, filtering, sorting, and grouping.
 
-The basic function of this plugin is to have a single note where you can view all your inline TODOs. This single note is identified by containing the following special comment `<!-- inline-todo-plugin -->`. This comment can be inserted by pressing `Tools -> Create TODO summary note`. Be careful not to place this in an existing note as the plugin will overwrite everything.
+## Features
 
-# Installation
-- Go to `Tools -> Options -> Plugins`(macOS: Joplin -> Preferences -> Plugins)
-- Search for "Inline TODO" in the search box
-- Click Install and restart Joplin
-- Create a Todo Summary in your folder of choice (Tools -> Create TODO Summary Note)
+- **Write TODOs anywhere** in your notes using markdown checkbox syntax
+- **Query-based summaries** with JSON configuration for advanced filtering
+- **Multi-level sorting and grouping** with custom sort orders
+- **Customizable entry format** with template placeholders
+- **Auto-reload** with configurable intervals
+- **Multiple summary types** including regular summaries and query summaries
 
-#### Or
-- Download the [plugin jpl](https://github.com/joplin/plugins/raw/master/plugins/plugin.calebjohn.todo/plugin.jpl)
-- Go to `Tools -> Options -> Plugins`
-- Click on the gear icon and select "Install from file"
-- Select the downloaded jpl file
-- Restart Joplin
-- Create a Todo Summary in your folder of choice (Tools -> Create TODO Summary Note)
+## Installation
 
+1. Go to `Tools -> Options -> Plugins` (macOS: Joplin -> Preferences -> Plugins)
+2. Search for "Query TODO"
+3. Click Install and restart Joplin
+4. Create a summary note: `Tools -> Create TODO summary note` or `Tools -> Create Query summary note`
 
-# Configuration
+## Quick Start
 
- - Tools -> Options -> Inline TODO (Windows/Linux)
- - Joplin -> Preferences (macOS))
+### Basic TODO Format
 
-## TODO Types
-### Metalist Style
-Inspired by [this post](https://discourse.joplinapp.org/t/create-a-task-report-plugin-for-a-joplin-note-taking-app/21177) on the Joplin forum. This is the preferred style because it uses the markdown checkbox format (plus some special syntax), making it trivial to check the box and hide the TODO from the summary. 
-
-The basic form is a checkbox, followed any (or all) of: @category (this is a primary filtering field, so there can only be one), //date, +tags, and finally the TODO content. Having at least on of these special fields is required for the todo to be picked up by the plugin, without them it is just a plain checkbox.
-
-@category does not need to be a person, it can also be viewed as a category. It will sometimes affect the rendering of the content by grouping categories. 
-```
-I take a lot of notes about various things. It can be helpful to
-keep my TODOs together with the content they pertain to.
-
-- [ ] @TODO Think about how to make a plugin to solve this +joplin
-
-This way the TODO benefits from context.
-
-- [ ] @TODO +joplin //2022-04-04 Release the TODO plugin!
-
-I'd still like a way to view all these! See below.
+Use metalist style (recommended):
+```markdown
+- [ ] @category +tag1 +tag2 //2026-02-15 Your TODO text here
 ```
 
+Components:
+- `@category` - Single category (required for plugin to detect)
+- `+tag` - Multiple tags (optional)
+- `//YYYY-MM-DD` - Due date (optional)  
+- Checkbox state: `[ ]` = open, `[x]` = done
 
-### Link Style
-This is a simple TODO style that I've been using for the last few years. It intentionally uses the markdown link syntax which gives it highlighting in the editor and the viewer.
-This format can accept a [wider variety](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse#date_time_string_format) of date formats.
+### Regular Summary Note
 
-The basic form is a link, where the name is "TODO" and the date replaces the URL section. The TODO content just follows after.
-
-```
-I take a lot of notes about various things. It can be helpful to
-keep my TODOs together with the content they pertain to.
-
-[TODO]() Think about how to make a plugin to solve this
-
-This way the TODO benefits from context.
-
-[TODO](2022-04-04) Release the TODO plugin!
-
-I'd still like a way to view all these! See below.
+Create with `Tools -> Create TODO summary note`:
+```markdown
+<!-- inline-todo-plugin -->
 ```
 
-### List Style
-This style just uses markdown checklist items. What sets this apart from the Metalist style is the lack of support for categories and dates in this style. This style was created for users that are already happy using plain checklists for their tasks, but want an additional place to collect them. For most users, I recommend the Metalist style instead.
+Automatically shows all TODOs from all notes.
 
+### Query Summary Note
+
+Create with `Tools -> Create Query summary note`:
+````markdown
+```json:query-summary
+{
+  "query": {
+    "AND": [
+      {"CATEGORY": "work"},
+      {"STATUS": "open"}
+    ]
+  },
+  "sortOptions": [
+    {
+      "sortLevel": "1",
+      "sortBy": "category",
+      "sortOrder": "ascend"
+    }
+  ],
+  "groupLevel": 1,
+  "entryFormat": "- {{{STATUS}}} {{{CATEGORY}}} {{{TAGS}}} {{{CONTENT}}} [link](:/{{{NOTE_ID}}})",
+  "openReload": false,
+  "reloadPeriodSecond": 0,
+  "forceSyncWhenReload": true
+}
 ```
-I take a lot of notes about various things. It can be helpful to
-keep my TODOs together with the content they pertain to.
+````
 
-- [ ] Think about how to make a plugin to solve this
+## Query Configuration
 
-This way the TODO benefits from context.
+### Query Types
 
-- [ ] Release the TODO plugin!
+Filter TODOs by:
+- `CATEGORY` - Filter by category (`@work`, `@personal`, etc.)
+- `TAG` - Filter by tag (`+urgent`, `+important`, etc.)
+- `STATUS` - Filter by status (`open`, `done`)
+- `NOTE` - Filter by note ID
+- `NOTEBOOK` - Filter by notebook ID (supports `recursive: true`)
+- `AND` - All conditions must match
+- `OR` - At least one condition must match
 
-I'd still like a way to view all these! See below.
+All queries support `negated: true` to invert the match.
+
+### Sorting
+
+Sort by `category`, `tag`, `date`, or `status` with:
+- `ascend` - Ascending order
+- `descend` - Descending order
+- `custom` - Custom order with `sortOrderCustom: "val1,val2,val3"`
+
+### Entry Format
+
+Customize TODO display with placeholders:
+- `{{{STATUS}}}` - `[ ]` or `[x]`
+- `{{{CATEGORY}}}` - `@category`
+- `{{{TAGS}}}` - `+tag1 +tag2`
+- `{{{DATE}}}` - `//YYYY-MM-DD`
+- `{{{CONTENT}}}` - TODO text
+- `{{{NOTE_ID}}}` - Source note ID
+- `{{{NOTE_TITLE}}}` - Source note title
+- `{{{NOTEBOOK}}}` - Parent notebook name
+
+### Auto-Reload
+
+- `openReload: true` - Refresh when opening the note (default: false)
+- `reloadPeriodSecond: 30` - Auto-refresh every N seconds (default: 0 = disabled)
+- `forceSyncWhenReload: true` - Sync after refresh (default: true)
+
+## Examples
+
+### Filter work TODOs by priority
+```json
+{
+  "query": {
+    "AND": [
+      {"CATEGORY": "work"},
+      {"STATUS": "open"}
+    ]
+  },
+  "sortOptions": [
+    {
+      "sortLevel": "1",
+      "sortBy": "tag",
+      "sortOrder": "custom",
+      "sortOrderCustom": "urgent,high,normal,low"
+    }
+  ],
+  "groupLevel": 1
+}
 ```
 
-
-## Summary Types
-There are two supported summary styles.
-
-### Plain
-This is the basic style that I created for myself, and have been using for the last few years. 
-
-It starts by showing all the TODOs that have dates under the DUE section (sorted by date). After that, all the other TODOs are shown in no specific order under their respective category and parent notebook.
-
-This style is meant for personal use, the table method (below) is recommended for more complex use.
-
-```
-# DUE
-- [Note a](:/e710b7af31fc47c89ca5fc4d3c0ecb3a): 2022-01-13 Have some me time
-
-- [Note b](:/beef7ed6d91649149751cea8d14af02d): 2022-03-12 Meat delivery +burgers
-
-# Bob
-## Folder 2
-- [Note c](:/ef3aac56ffa246baa6a96cc94dd8f25e): Call Teddy +repairs
-
-# Linda
-## Folder 1
-- [Note b](:/beef7ed6d91649149751cea8d14af02d): I'll get to this eventually
+### Show TODOs NOT from work
+```json
+{
+  "query": {
+    "CATEGORY": "work",
+    "negated": true
+  }
+}
 ```
 
-### Table
-This is particularly powerful when combined with hieuthi's [table sorting plugin](https://discourse.joplinapp.org/t/plugin-markdown-table-sortable/21846). (warning: if you use the "apply sorting" feature, the sort will be overwritten when a new summary is written, don't rely on it!).
-
-```
-| Task | Category | Due | Tags | Notebook | Note |
-| ---- | -------- | --- | ---- | -------- | ---- |
-| Have some me time | Linda | 2022-01-13 |  | Folder 3 | [Note a](:/e710b7af31fc47c89ca5fc4d3c0ecb3a)
-| Call Teddy | Bob |  | repairs | Folder 2 | [Note c](:/ef3aac56ffa246baa6a96cc94dd8f25e)
-| I'll get to this eventually | Linda |  |  | Folder 1 | [Note b](:/beef7ed6d91649149751cea8d14af02d)
-| Meat delivery | Bob | 2022-03-12 | burgers | Folder 1 | [Note b](:/beef7ed6d91649149751cea8d14af02d)
-```
-
-## Filtering
-Todos can be filtered such that the plugin will only display Todos from specific notebooks. This can be done by adding notebook names inside the special comment. Notebooks that have a space in their name must be quoted. For example, to limit a search to only "Work" and "Special Project" notebooks, replace the default special comment with.
-
-```
-<!-- inline-todo-plugin Work "Special Project" -->
+### Multi-level grouping
+```json
+{
+  "query": {"STATUS": "open"},
+  "sortOptions": [
+    {"sortLevel": "1", "sortBy": "category", "sortOrder": "ascend"},
+    {"sortLevel": "2", "sortBy": "date", "sortOrder": "ascend"}
+  ],
+  "groupLevel": 2
+}
 ```
 
-## Custom Editor
-The plugin includes an optional custom editor that replaces the markdown summary note with an interactive GUI. This gives you a more visual way to work with your TODOs, with the ability to filter, sort, and manage tasks directly from the interface.
+### Custom format with links
+```json
+{
+  "query": {"STATUS": "open"},
+  "entryFormat": "[{{{CONTENT}}}](:/{{{NOTE_ID}}}) - {{{CATEGORY}}} {{{DATE}}}"
+}
+```
 
-The powerful feature of the custom editor is the **saved filters**. Instead of having a single view of all your TODOs, you can create multiple named filter views that each show a different subset of your tasks. For example, you might have:
-- A "Work" filter showing only TODOs from work-related notebooks
-- A "This Week" filter showing only TODOs due in the next 7 days
-- A "High Priority" filter for tasks with specific tags or categories
-- A "Project X" filter combining specific notebooks, categories, and tags
+## Settings
 
-Each saved filter appears in the sidebar with a count of open TODOs matching that filter, making it easy to see at a glance what needs attention. You can quickly switch between filters to get different perspectives on your TODO list without creating multiple summary notes.
+Access via `Tools -> Options -> Query TODO`
 
-Filters can combine criteria including:
-- Notebooks
-- Notes
-- Categories (@category)
-- Tags (+tag)
-- Due dates (relative to the current date)
-- Completion status
+- **TODO Style** - Choose metalist, link, or plain style
+- **Summary Format** - Choose display format (list, table, diary)
+- **Sort By** - Default sort order
+- **Auto Refresh** - Refresh summary when opening notes
+- **Custom Editor** - Use custom summary editor UI
 
-### Enabling the Custom Editor
-The custom editor is currently off by default, but will be enabled by default in a future release.
+## Notes
 
-To enable it now:
-1. Go to `Tools -> Options -> Inline TODO` (Windows/Linux) or `Joplin -> Preferences -> Inline TODO` (macOS)
-2. Check the box for "Enable custom editor for summary notes"
-3. Open or navigate to your TODO summary note
+- Summary notes are excluded from TODO extraction to prevent self-referencing
+- The toolbar refresh button (🔄) only appears for query summary notes
+- Regular summaries use global settings, query summaries use per-note JSON config
+- TODOs without special fields (@, +, //) won't be detected
 
-The custom editor will automatically activate when you open a summary note (any note containing the `<!-- inline-todo-plugin -->` comment). If it doesn't open automatically, press the eye icon in the top right corner of the screen, this eye is used to toggle between the typical Joplin editor, and the new custom editor. You can click on TODOs to jump to their source note, mark them complete, or apply filters to focus on specific subsets of tasks.
+## License
 
-
-# Roadmap
-I consider this plugin to be finished (it meets my needs). But below are some ideas that I will implement in the future if I have some time.
-### Ideas
-- [ ] Add in support for spaces in the category field of the metalist style. This will allow for categories like @"Caleb John"
-- [ ] Add in the fuzzy date handling (e.g. mid april)
-- [ ] Add a renderer component that adds html ids (so we can scroll to TODOs)
-- [ ] Add support for the [Metis plugin](https://github.com/hieuthi/joplin-plugin-metis) (todo.txt)
-- [ ] [xit format](https://xit.jotaen.net/)
-
+MIT

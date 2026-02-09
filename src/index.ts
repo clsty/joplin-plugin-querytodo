@@ -8,7 +8,7 @@ import { mark_current_line_as_done } from './mark_todo';
 import { regexes, regexTitles, summaryTitles } from './settings_tables';
 import { createSummaryNote, createQuerySummaryNote, isSummary } from './summary_note';
 import { registerEditor } from './editor';
-import { hasQuerySummary } from './query_summary';
+import { hasQuerySummary, parseQuerySummary } from './query_summary';
 
 const globalLogger = new Logger();
 globalLogger.addTarget(TargetType.Console);
@@ -34,7 +34,7 @@ async function getSettings(): Promise<Settings> {
 joplin.plugins.register({
 	onStart: async function() {
 		await joplin.settings.registerSection('settings.calebjohn.todo', {
-			label: 'Inline TODO',
+			label: 'Query TODO',
 			iconName: 'fa fa-check'
 		});
 		await joplin.settings.registerSettings({
@@ -302,15 +302,70 @@ joplin.plugins.register({
 			builder.settings = await getSettings();
 		});
 
+		// Track periodic reload timers for query summaries
+		const reloadTimers: Map<string, NodeJS.Timeout> = new Map();
+
+		// Helper function to refresh a query summary note
+		const refreshQuerySummaryNote = async (noteId: string, noteBody: string) => {
+			await builder.search_in_all();
+			await update_summary(builder.summary, builder.settings, noteId, noteBody);
+		};
+
+		// Helper function to setup periodic reload for a query summary
+		const setupPeriodicReload = (noteId: string, noteBody: string, periodSeconds: number) => {
+			// Clear existing timer if any
+			if (reloadTimers.has(noteId)) {
+				clearInterval(reloadTimers.get(noteId)!);
+			}
+			
+			if (periodSeconds > 0) {
+				const timer = setInterval(async () => {
+					try {
+						// Get fresh note body in case it changed
+						const note = await joplin.data.get(['notes', noteId], { fields: ['body'] });
+						await refreshQuerySummaryNote(noteId, note.body);
+					} catch (error) {
+						console.error('Error in periodic reload:', error);
+					}
+				}, periodSeconds * 1000);
+				
+				reloadTimers.set(noteId, timer);
+			}
+		};
+
 		await joplin.workspace.onNoteSelectionChange(async () => {
 			const currentNote = await joplin.workspace.selectedNote();
 
 			// Update toolbar button visibility
 			await updateToolbarVisibility();
 
-			if (currentNote && builder.settings.auto_refresh_summary && isSummary(currentNote)) {
-				await builder.search_in_all();
-				update_summary(builder.summary, builder.settings, currentNote.id, currentNote.body);
+			if (currentNote) {
+				// Check if it's a query summary note
+				if (hasQuerySummary(currentNote.body)) {
+					const config = parseQuerySummary(currentNote.body);
+					
+					if (config) {
+						// Handle openReload
+						if (config.openReload !== false) { // default is true
+							await refreshQuerySummaryNote(currentNote.id, currentNote.body);
+						}
+						
+						// Setup periodic reload if configured
+						if (config.reloadPeriodSecond && config.reloadPeriodSecond > 0) {
+							setupPeriodicReload(currentNote.id, currentNote.body, config.reloadPeriodSecond);
+						} else {
+							// Clear any existing timer for this note
+							if (reloadTimers.has(currentNote.id)) {
+								clearInterval(reloadTimers.get(currentNote.id)!);
+								reloadTimers.delete(currentNote.id);
+							}
+						}
+					}
+				} else if (builder.settings.auto_refresh_summary && isSummary(currentNote)) {
+					// Regular summary note behavior
+					await builder.search_in_all();
+					update_summary(builder.summary, builder.settings, currentNote.id, currentNote.body);
+				}
 			}
 		});
 

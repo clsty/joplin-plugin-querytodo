@@ -1,0 +1,50 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Build plugin
+        run: npm run dist
+        
+      - name: Get plugin version
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./src/manifest.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: auto-release
+          name: Auto Release (v${{ steps.get_version.outputs.version }})
+          body: |
+            Automatic build from latest commit
+            
+            **Version:** ${{ steps.get_version.outputs.version }}
+            **Commit:** ${{ github.sha }}
+            **Date:** ${{ github.event.head_commit.timestamp }}
+          files: publish/*.jpl
+          prerelease: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

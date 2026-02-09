@@ -55,10 +55,10 @@ async function updateQuerySummary(summary: Summary, settings: Settings, summary_
 		entryFormat
 	);
 	
-	await setQuerySummaryBody(summaryBody, summary_id, old_body, settings);
+	await setQuerySummaryBody(summaryBody, summary_id, old_body, settings, config);
 }
 
-async function setQuerySummaryBody(summaryBody: string, summary_id: string, old_body: string, settings: Settings) {
+async function setQuerySummaryBody(summaryBody: string, summary_id: string, old_body: string, settings: Settings, config?: any) {
 	// For query summaries, we need to clear content BEFORE the query block and insert new summary
 	const queryRegex = /```json:query-summary\s*\n[\s\S]*?\n```/gm;
 	const queryMatch = old_body.match(queryRegex);
@@ -102,7 +102,9 @@ async function setQuerySummaryBody(summaryBody: string, summary_id: string, old_
 				console.warn("Could not update summary note with api: " + summary_id);
 			});
 
-	if (settings.force_sync) {
+	// Use forceSyncWhenReload from config if available, default to true
+	const shouldSync = config?.forceSyncWhenReload !== false; // default is true
+	if (shouldSync) {
 		await joplin.commands.execute('synchronize');
 	}
 }
