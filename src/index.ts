@@ -210,45 +210,13 @@ joplin.plugins.register({
 			}
 		});
 
-		// Create toolbar button for query summaries - visibility will be controlled dynamically
+		// Create toolbar button for query summaries
+		// Note: Toolbar button visibility cannot be dynamically controlled via API
 		await joplin.views.toolbarButtons.create(
 			"refreshQuerySummaryToolbarButton",
 			"inlineTodo.refreshQuerySummary",
 			ToolbarButtonLocation.NoteToolbar
 		);
-
-		// Function to update toolbar button visibility
-		const updateToolbarVisibility = async () => {
-			const currentNote = await joplin.workspace.selectedNote();
-			if (currentNote) {
-				try {
-					const note = await joplin.data.get(['notes', currentNote.id], { fields: ['body'] });
-					const isQuerySummary = hasQuerySummary(note.body);
-					// Show query button only for query summaries
-					await joplin.views.toolbarButtons.setProperty(
-						"refreshQuerySummaryToolbarButton",
-						"visible",
-						isQuerySummary
-					);
-				} catch (error) {
-					// Note might not exist or error accessing it
-					await joplin.views.toolbarButtons.setProperty(
-						"refreshQuerySummaryToolbarButton",
-						"visible",
-						false
-					);
-				}
-			} else {
-				await joplin.views.toolbarButtons.setProperty(
-					"refreshQuerySummaryToolbarButton",
-					"visible",
-					false
-				);
-			}
-		};
-
-		// Initial visibility check
-		await updateToolbarVisibility();
 
 		// Track periodic reload timers for query summaries
 		const reloadTimers: Map<string, NodeJS.Timeout> = new Map();
@@ -320,9 +288,6 @@ joplin.plugins.register({
 			console.log('[QueryTODO] Note selection changed - handler triggered');
 			const currentNote = await joplin.workspace.selectedNote();
 			console.log('[QueryTODO] Current note:', currentNote ? currentNote.id : 'none');
-
-			// Update toolbar button visibility
-			await updateToolbarVisibility();
 
 			if (currentNote) {
 				// Check if it's a query summary note
