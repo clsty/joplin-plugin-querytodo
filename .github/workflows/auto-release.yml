@@ -37,7 +37,7 @@ jobs:
       - name: Delete old release
         continue-on-error: true
         run: |
-          gh release delete auto-release --yes --cleanup-tag || true
+          gh release delete auto-release --yes --cleanup-tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
