@@ -6,7 +6,7 @@ import { Settings } from './types';
 import { update_summary } from './summary';
 import { mark_current_line_as_done } from './mark_todo';
 import { regexes, regexTitles, summaryTitles } from './settings_tables';
-import { createSummaryNote, createQuerySummaryNote, isSummary } from './summary_note';
+import { createSummaryNote, createQuerySummaryNote, isSummary, isRegularSummary } from './summary_note';
 import { registerEditor } from './editor';
 import { hasQuerySummary, parseQuerySummary } from './query_summary';
 
@@ -361,8 +361,8 @@ joplin.plugins.register({
 							}
 						}
 					}
-				} else if (builder.settings.auto_refresh_summary && isSummary(currentNote)) {
-					// Regular summary note behavior
+				} else if (builder.settings.auto_refresh_summary && isRegularSummary(currentNote)) {
+					// Regular summary note behavior (not query summaries)
 					await builder.search_in_all();
 					update_summary(builder.summary, builder.settings, currentNote.id, currentNote.body);
 				}
