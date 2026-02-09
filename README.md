@@ -176,7 +176,8 @@ Access via `Tools -> Options -> Query TODO`
 ## Notes
 
 - Summary notes are excluded from TODO extraction to prevent self-referencing
-- Use the custom editor (Tools -> Options -> Query TODO -> Enable custom editor) to get a refresh button in query summary notes
+- **Query summary refresh**: Enable "Custom editor for summary notes" in settings (Tools -> Options -> Query TODO). When viewing a query summary note, a "Toggle editor plugin" button (eye icon) will appear in the note toolbar. Click it to switch to the custom editor view, which includes a refresh button.
+- The "Toggle editor plugin" button only appears on query summary notes (not on regular notes or regular summary notes)
 - Regular summaries use global settings, query summaries use per-note JSON config
 - TODOs without special fields (@, +, //) won't be detected
 

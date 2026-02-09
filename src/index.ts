@@ -244,8 +244,9 @@ joplin.plugins.register({
 			);
 		}
 
-		// Note: Query summaries use the refresh button in the custom editor UI
-		// No separate toolbar button is needed
+		// Note: The custom editor now only activates for query summary notes.
+		// When active, users can use the "Toggle editor plugin" button (added automatically by Joplin)
+		// to switch to the custom editor view, which includes a refresh button.
 
 		await joplin.settings.onChange(async (_) => {
 			builder.settings = await getSettings();

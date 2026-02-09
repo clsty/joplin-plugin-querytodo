@@ -4,6 +4,7 @@ import { SummaryBuilder } from './builder';
 import { isSummary } from './summary_note';
 import { Filters, IpcMessage, Todo } from './types';
 import { mark_done_scrollto } from './mark_todo';
+import { hasQuerySummary } from './query_summary';
 import Logger from "@joplin/utils/Logger";
 
 const logger = Logger.create('inline-todo: registerEditor');
@@ -85,7 +86,8 @@ export async function registerEditor(builder: SummaryBuilder) {
 			const note = await joplin.data.get([ 'notes', event.noteId ], { fields: ['body'] });
 
 			logger.info('onActivationCheck: Handling note: ' + event.noteId);
-			return isSummary(note);
+			// Only activate for query summary notes, not regular summary notes
+			return hasQuerySummary(note.body);
 		}
 	});
 }
