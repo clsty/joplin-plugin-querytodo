@@ -1,6 +1,6 @@
 {
-  "name": "joplin-plugin-inline-todo",
-  "version": "2.0.5",
+  "name": "joplin-plugin-querytodo",
+  "version": "0.0.1",
   "scripts": {
     "dist": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && webpack --env joplin-plugin-config=createArchive",
     "prepare": "npm run dist",
@@ -13,7 +13,7 @@
     "version": "sed -i '/\\\"version\\\": \\\"/s/[^\\\"]*\\\",/'\"$npm_package_version\\\",/\" src/manifest.json && git add src/manifest.json"
   },
   "license": "MIT",
-  "homepage": "https://github.com/clsty/joplin-inline-todo#readme",
+  "homepage": "https://github.com/clsty/joplin-plugin-querytodo#readme",
   "keywords": [
     "joplin-plugin",
     "todo"
