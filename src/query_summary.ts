@@ -227,6 +227,7 @@ function getSortKey(todo: Todo, sortBy: SortBy): string | number {
 		case 'category':
 			return todo.category || '';
 		case 'date':
+			// Use MAX_SAFE_INTEGER for todos without dates to place them at the end when sorting ascending
 			return todo.date ? Date.parse(todo.date) : Number.MAX_SAFE_INTEGER;
 		case 'status':
 			return todoToStatus(todo);
