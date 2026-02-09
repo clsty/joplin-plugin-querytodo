@@ -26,25 +26,38 @@ jobs:
       - name: Build plugin
         run: npm run dist
         
-      - name: Get plugin version
-        id: get_version
+      - name: Get plugin version and ID
+        id: get_info
         run: |
           VERSION=$(node -p "require('./src/manifest.json').version")
+          PLUGIN_ID=$(node -p "require('./src/manifest.json').id")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "plugin_id=$PLUGIN_ID" >> $GITHUB_OUTPUT
           
-      - name: Create or Update Release
+      - name: Delete old release
+        continue-on-error: true
+        run: |
+          gh release delete auto-release --yes --cleanup-tag || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Create new release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: auto-release
-          name: Auto Release (v${{ steps.get_version.outputs.version }})
+          name: Auto Release (v${{ steps.get_info.outputs.version }})
           body: |
             Automatic build from latest commit
             
-            **Version:** ${{ steps.get_version.outputs.version }}
+            **Version:** ${{ steps.get_info.outputs.version }}
+            **Plugin ID:** ${{ steps.get_info.outputs.plugin_id }}
             **Commit:** ${{ github.sha }}
             **Date:** ${{ github.event.head_commit.timestamp }}
+            
+            Download the `.jpl` file below and install it in Joplin.
           files: publish/*.jpl
           prerelease: true
           draft: false
+          make_latest: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
