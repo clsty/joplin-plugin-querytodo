@@ -250,10 +250,6 @@ joplin.plugins.register({
 		// Initial visibility check
 		await updateToolbarVisibility();
 
-		await joplin.settings.onChange(async (_) => {
-			builder.settings = await getSettings();
-		});
-
 		// Track periodic reload timers for query summaries
 		const reloadTimers: Map<string, NodeJS.Timeout> = new Map();
 
@@ -270,10 +266,11 @@ joplin.plugins.register({
 
 		// Helper function to setup periodic reload for a query summary
 		const setupPeriodicReload = (noteId: string, noteBody: string, periodSeconds: number) => {
-			// Clear existing timer if any
-			if (reloadTimers.has(noteId)) {
-				clearInterval(reloadTimers.get(noteId)!);
+			// Clear all existing timers first (only one note should have periodic reload at a time)
+			for (const [id, timer] of reloadTimers.entries()) {
+				clearInterval(timer);
 			}
+			reloadTimers.clear();
 			
 			if (periodSeconds > 0) {
 				const timer = setInterval(async () => {
@@ -289,6 +286,29 @@ joplin.plugins.register({
 				reloadTimers.set(noteId, timer);
 			}
 		};
+
+		await joplin.settings.onChange(async (event) => {
+			builder.settings = await getSettings();
+			
+			// If reload-related settings changed, update the current note's reload behavior
+			if (event.keys.includes('openReload') || event.keys.includes('reloadPeriodSecond')) {
+				const currentNote = await joplin.workspace.selectedNote();
+				if (currentNote && hasQuerySummary(currentNote.body)) {
+					const settings = await getSettings();
+					
+					// Update periodic reload if configured
+					if (settings.reload_period_second && settings.reload_period_second > 0) {
+						setupPeriodicReload(currentNote.id, currentNote.body, settings.reload_period_second);
+					} else {
+						// Clear any existing timer for this note
+						if (reloadTimers.has(currentNote.id)) {
+							clearInterval(reloadTimers.get(currentNote.id)!);
+							reloadTimers.delete(currentNote.id);
+						}
+					}
+				}
+			}
+		});
 
 		await joplin.workspace.onNoteSelectionChange(async () => {
 			const currentNote = await joplin.workspace.selectedNote();
@@ -315,6 +335,12 @@ joplin.plugins.register({
 							clearInterval(reloadTimers.get(currentNote.id)!);
 							reloadTimers.delete(currentNote.id);
 						}
+					}
+				} else {
+					// Clear any existing timer if the note is not a query summary
+					if (reloadTimers.has(currentNote.id)) {
+						clearInterval(reloadTimers.get(currentNote.id)!);
+						reloadTimers.delete(currentNote.id);
 					}
 				}
 			}
