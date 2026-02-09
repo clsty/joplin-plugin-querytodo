@@ -36,8 +36,6 @@ export async function createQuerySummaryNote() {
 		"STATUS": "open"
 	},
 	"entryFormat": "- {{{STATUS}}} {{{CATEGORY}}} {{{TAGS}}} {{{DATE}}} {{{CONTENT}}} [origin](:/{{{NOTE_ID}}})",
-	"openReload": false,
-	"reloadPeriodSecond": 0,
 	"forceSyncWhenReload": true
 }
 \`\`\`

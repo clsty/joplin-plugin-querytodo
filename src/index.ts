@@ -27,6 +27,8 @@ async function getSettings(): Promise<Settings> {
 		show_complete_todo: await joplin.settings.value('showCompletetodoitems'),
 		auto_refresh_summary: false, // Not used for query summaries
 		custom_editor: false, // Custom editor removed
+		open_reload: await joplin.settings.value('openReload'),
+		reload_period_second: await joplin.settings.value('reloadPeriodSecond'),
 	};
 }
 
@@ -112,6 +114,25 @@ joplin.plugins.register({
 				public: true,
 				advanced: true,
 				label: 'Include complete TODO items in TODO summary (it might take long time/long list)',
+			},
+			'openReload': {
+				value: false,
+				type: SettingItemType.Bool,
+				section: 'settings.clsty.querytodo',
+				public: true,
+				advanced: true,
+				label: 'Refresh query summary notes when opening them',
+			},
+			'reloadPeriodSecond': {
+				value: 0,
+				type: SettingItemType.Int,
+				section: 'settings.clsty.querytodo',
+				public: true,
+				advanced: true,
+				minimum: 0,
+				maximum: 3600,
+				step: 1,
+				label: 'Auto-refresh query summary notes every N seconds (0 = disabled)',
 			},
 		});
 
@@ -278,23 +299,21 @@ joplin.plugins.register({
 			if (currentNote) {
 				// Check if it's a query summary note
 				if (hasQuerySummary(currentNote.body)) {
-					const config = parseQuerySummary(currentNote.body);
+					const settings = await getSettings();
 					
-					if (config) {
-						// Handle openReload (default is false)
-						if (config.openReload === true) {
-							await refreshQuerySummaryNote(currentNote.id, currentNote.body);
-						}
-						
-						// Setup periodic reload if configured
-						if (config.reloadPeriodSecond && config.reloadPeriodSecond > 0) {
-							setupPeriodicReload(currentNote.id, currentNote.body, config.reloadPeriodSecond);
-						} else {
-							// Clear any existing timer for this note
-							if (reloadTimers.has(currentNote.id)) {
-								clearInterval(reloadTimers.get(currentNote.id)!);
-								reloadTimers.delete(currentNote.id);
-							}
+					// Handle openReload (default is false)
+					if (settings.open_reload === true) {
+						await refreshQuerySummaryNote(currentNote.id, currentNote.body);
+					}
+					
+					// Setup periodic reload if configured
+					if (settings.reload_period_second && settings.reload_period_second > 0) {
+						setupPeriodicReload(currentNote.id, currentNote.body, settings.reload_period_second);
+					} else {
+						// Clear any existing timer for this note
+						if (reloadTimers.has(currentNote.id)) {
+							clearInterval(reloadTimers.get(currentNote.id)!);
+							reloadTimers.delete(currentNote.id);
 						}
 					}
 				}

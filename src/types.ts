@@ -60,6 +60,8 @@ export interface Settings {
 	show_complete_todo: boolean;
 	auto_refresh_summary: boolean;
 	custom_editor: boolean;
+	open_reload: boolean;
+	reload_period_second: number;
 }
 
 export interface TitleEntry {
@@ -207,7 +209,5 @@ export interface QuerySummaryConfig {
 	sortOptions?: SortOption[];
 	groupLevel?: number;
 	entryFormat?: string;
-	openReload?: boolean;
-	reloadPeriodSecond?: number;
 	forceSyncWhenReload?: boolean;
 }

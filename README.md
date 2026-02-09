@@ -63,8 +63,6 @@ Create with `Tools -> Create Query summary note`:
   ],
   "groupLevel": 1,
   "entryFormat": "- {{{STATUS}}} {{{CATEGORY}}} {{{TAGS}}} {{{CONTENT}}} [link](:/{{{NOTE_ID}}})",
-  "openReload": false,
-  "reloadPeriodSecond": 0,
   "forceSyncWhenReload": true
 }
 ```
@@ -106,9 +104,12 @@ Customize TODO display with placeholders:
 
 ### Auto-Reload
 
-- `openReload: true` - Refresh when opening the note (default: false)
-- `reloadPeriodSecond: 30` - Auto-refresh every N seconds (default: 0 = disabled)
-- `forceSyncWhenReload: true` - Sync after refresh (default: true)
+Auto-reload settings have been moved to plugin settings (Tools -> Options -> Query TODO). These settings apply to all query summary notes:
+
+- **Refresh query summary notes when opening them** (default: false) - Automatically refresh the TODO list when you open a query summary note
+- **Auto-refresh query summary notes every N seconds** (default: 0 = disabled) - Set an interval in seconds to automatically refresh query summary notes
+
+Note: `forceSyncWhenReload` can still be set in individual note configurations (default: true).
 
 ## Examples
 

@@ -27,6 +27,8 @@ export const createSettings = (overrides?: Partial<Settings>): Settings => ({
 	force_sync: true,
 	auto_refresh_summary: true,
 	custom_editor: false,
+	open_reload: false,
+	reload_period_second: 0,
 	...overrides
 });
 
