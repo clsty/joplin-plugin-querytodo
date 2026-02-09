@@ -253,6 +253,12 @@ joplin.plugins.register({
 				const currentNote = await joplin.workspace.selectedNote();
 				if (!currentNote) return;
 				
+				// Only refresh if the note actually has a query summary block
+				if (!hasQuerySummary(currentNote.body)) {
+					console.warn("Cannot refresh: current note is not a query summary note");
+					return;
+				}
+				
 				await builder.search_in_all();
 				await update_summary(builder.summary, builder.settings, currentNote.id, currentNote.body);
 			}
@@ -307,6 +313,11 @@ joplin.plugins.register({
 
 		// Helper function to refresh a query summary note
 		const refreshQuerySummaryNote = async (noteId: string, noteBody: string) => {
+			// Ensure the note actually has a query summary block before refreshing
+			if (!hasQuerySummary(noteBody)) {
+				console.warn(`Cannot refresh note ${noteId}: not a query summary note`);
+				return;
+			}
 			await builder.search_in_all();
 			await update_summary(builder.summary, builder.settings, noteId, noteBody);
 		};
