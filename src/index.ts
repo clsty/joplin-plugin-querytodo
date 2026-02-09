@@ -294,7 +294,8 @@ joplin.plugins.register({
 			if (event.keys.includes('openReload') || event.keys.includes('reloadPeriodSecond')) {
 				const currentNote = await joplin.workspace.selectedNote();
 				if (currentNote && hasQuerySummary(currentNote.body)) {
-					const settings = await getSettings();
+					// Use the already updated builder.settings
+					const settings = builder.settings;
 					
 					// Update periodic reload if configured
 					if (settings.reload_period_second && settings.reload_period_second > 0) {
