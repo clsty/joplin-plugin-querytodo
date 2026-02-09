@@ -6,8 +6,7 @@ import { Settings } from './types';
 import { update_summary } from './summary';
 import { mark_current_line_as_done } from './mark_todo';
 import { regexes, regexTitles, summaryTitles } from './settings_tables';
-import { createSummaryNote, createQuerySummaryNote, isSummary, isRegularSummary } from './summary_note';
-import { registerEditor } from './editor';
+import { createQuerySummaryNote, isSummary } from './summary_note';
 import { hasQuerySummary, parseQuerySummary } from './query_summary';
 
 const globalLogger = new Logger();
@@ -26,8 +25,8 @@ async function getSettings(): Promise<Settings> {
 		sort_by: await joplin.settings.value('sortBy'),
 		force_sync: await joplin.settings.value('forceSync'),
 		show_complete_todo: await joplin.settings.value('showCompletetodoitems'),
-		auto_refresh_summary: await joplin.settings.value('autoRefreshSummary'),
-		custom_editor: await joplin.settings.value('enableCustomEditor'),
+		auto_refresh_summary: false, // Not used for query summaries
+		custom_editor: false, // Custom editor removed
 	};
 }
 
@@ -114,46 +113,9 @@ joplin.plugins.register({
 				advanced: true,
 				label: 'Include complete TODO items in TODO summary (it might take long time/long list)',
 			},
-			'autoRefreshSummary': {
-				value: true,
-				type: SettingItemType.Bool,
-				section: 'settings.clsty.querytodo',
-				public: true,
-				advanced: true,
-				label: 'Refresh Summary note when opening the note.',
-			},
-			'enableCustomEditor': {
-				value: false,
-				type: SettingItemType.Bool,
-				section: 'settings.clsty.querytodo',
-				public: true,
-				label: 'Enable custom editor for summary notes',
-			},
 		});
-
-		// TODO: remove this and change default to false
-		// This line ensures that the setting has been set, allowing us to
-		// change the default for new users only
-		if (!(await joplin.settings.value('enableCustomEditor'))) {
-			await joplin.settings.setValue('enableCustomEditor', false);
-		}
 
 		const builder = new SummaryBuilder(await getSettings());
-		await registerEditor(builder);
-
-		await joplin.commands.register({
-			name: "inlineTodo.createSummaryNote",
-			label: "Create TODO summary note",
-			execute: async () => {
-				await createSummaryNote();
-			},
-		});
-
-		await joplin.views.menuItems.create(
-			"createSummaryNoteMenuTools",
-			"inlineTodo.createSummaryNote",
-			MenuItemLocation.Tools
-		);
 
 		await joplin.commands.register({
 			name: "inlineTodo.createQuerySummaryNote",
@@ -206,43 +168,6 @@ joplin.plugins.register({
 			MenuItemLocation.Note,
 			{ accelerator: 'Ctrl+Alt+D' }
 		);
-
-		await joplin.commands.register({
-			name: "inlineTodo.refreshSummary",
-			label: "Refresh Summary Note",
-			iconName: "fas fa-sync-alt",
-			execute: async () => {
-				await builder.search_in_all();
-				const query = '/"<!-- inline-todo-plugin"';
-				let page = 0;
-				let r;
-				do {
-					page += 1;
-					r = await joplin.data.get(['search'], { query: query,  fields: ['id', 'body','is_conflict'], page: page })
-							.catch((error) => {
-								logger.error(error);
-								logger.warn("Joplin api error while searching for: " + query + " at page: " + page);
-								return { items: [], has_more: false };
-							});
-					if (r.items) {
-						for (const note of r.items) {
-							if (!note.is_conflict) {
-								update_summary(builder.summary, builder.settings, note.id, note.body);
-							}
-						}
-					}
-				} while(r.has_more);
-			}
-		});
-
-		const platform = (await joplin.versionInfo()).platform;
-		if (!builder.settings.auto_refresh_summary || platform == "mobile") {
-			await joplin.views.toolbarButtons.create(
-				"refreshSummaryToolbarButton",
-				"inlineTodo.refreshSummary",
-				ToolbarButtonLocation.EditorToolbar
-			);
-		}
 
 		// Add refresh command for query summaries
 		await joplin.commands.register({
@@ -372,10 +297,6 @@ joplin.plugins.register({
 							}
 						}
 					}
-				} else if (builder.settings.auto_refresh_summary && isRegularSummary(currentNote)) {
-					// Regular summary note behavior (not query summaries)
-					await builder.search_in_all();
-					update_summary(builder.summary, builder.settings, currentNote.id, currentNote.body);
 				}
 			}
 		});

@@ -117,12 +117,7 @@ function parseNotebookNames(nbs: string): string[] {
 	return parsed;
 }
 
-export function isRegularSummary(currentNote: Note): boolean {
-	// Check for regular summary only (not query summary)
-	return !!currentNote?.body.match(summary_regex);
-}
-
 export function isSummary(currentNote: Note): boolean {
-	// Check for either regular summary or query summary
-	return isRegularSummary(currentNote) || hasQuerySummary(currentNote?.body);
+	// Only query summaries are supported
+	return hasQuerySummary(currentNote?.body);
 }

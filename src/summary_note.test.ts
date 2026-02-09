@@ -1,64 +1,22 @@
-import { filterSummaryCategories, insertNewSummary, isSummary, isRegularSummary } from './summary_note';
+import { filterSummaryCategories, insertNewSummary, isSummary } from './summary_note';
 import { createSummary, createSummaryMap, createTodo, createNote } from './__test-utils__/factories';
 
 describe('summary_note', () => {
-	describe('isRegularSummary', () => {
-		test('identifies note with inline-todo-plugin comment', () => {
-			const note = createNote({
-				body: '# My Summary\n\n<!-- inline-todo-plugin -->\n\nSome content'
-			});
-
-			expect(isRegularSummary(note)).toBe(true);
-		});
-
-		test('identifies note with inline-todo-plugin comment and filter', () => {
-			const note = createNote({
-				body: '# My Summary\n\n<!-- inline-todo-plugin "Work" "Personal" -->\n\nSome content'
-			});
-
-			expect(isRegularSummary(note)).toBe(true);
-		});
-
-		test('returns false for note with query-summary block', () => {
-			const note = createNote({
-				body: '```json:query-summary\n{"query": {}}\n```'
-			});
-
-			expect(isRegularSummary(note)).toBe(false);
-		});
-
-		test('returns false for note without comment', () => {
-			const note = createNote({
-				body: 'Just a regular note with no special comment'
-			});
-
-			expect(isRegularSummary(note)).toBe(false);
-		});
-
-		test('returns false for null note', () => {
-			expect(isRegularSummary(null as any)).toBe(false);
-		});
-
-		test('returns false for undefined note', () => {
-			expect(isRegularSummary(undefined as any)).toBe(false);
-		});
-	});
-
 	describe('isSummary', () => {
-		test('identifies note with inline-todo-plugin comment', () => {
+		test('returns false for note with inline-todo-plugin comment (regular summaries not supported)', () => {
 			const note = createNote({
 				body: '# My Summary\n\n<!-- inline-todo-plugin -->\n\nSome content'
 			});
 
-			expect(isSummary(note)).toBe(true);
+			expect(isSummary(note)).toBe(false);
 		});
 
-		test('identifies note with inline-todo-plugin comment and filter', () => {
+		test('returns false for note with inline-todo-plugin comment and filter (regular summaries not supported)', () => {
 			const note = createNote({
 				body: '# My Summary\n\n<!-- inline-todo-plugin "Work" "Personal" -->\n\nSome content'
 			});
 
-			expect(isSummary(note)).toBe(true);
+			expect(isSummary(note)).toBe(false);
 		});
 
 		test('identifies note with query-summary block', () => {
