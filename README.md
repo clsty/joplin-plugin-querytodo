@@ -24,7 +24,7 @@ Download `*.jpl` from [pre-release]() and install it from Joplin `Tools -> Optio
 
 ### Basic TODO Format
 
-Use metalist style (recommended):
+Use metalist style:
 ```markdown
 - [ ] @category +tag1 +tag2 //2026-02-15 Your TODO text here
 ```
@@ -34,6 +34,8 @@ Components:
 - `+tag` - Multiple tags (optional)
 - `//YYYY-MM-DD` - Due date (optional)  
 - Checkbox state: `[ ]` = open, `[x]` = done
+
+**Note:** This plugin only supports the metalist style. Other TODO formats (link style, plain style) from the original Inline TODOs plugin are not supported.
 
 ### Query Summary Note
 
@@ -99,17 +101,10 @@ Customize TODO display with placeholders:
 
 Access via `Tools -> Options -> Query TODO`
 
-### Basic Settings
-- **TODO Style** - Choose metalist, link, or plain style
-- **Summary Format** - Choose display format (plain, table, diary)
-- **Sort By** - Default sort order (Category or Due Date)
-
-### Advanced Settings
+- **Apply styling to metalist style todos** - Apply styling in the markdown renderer (Restart Required) (default: true)
+- **Force sync after summary note update** - Important for data consistency (default: true)
 - **Refresh query summary notes when opening them** - Auto-refresh on note selection (default: false)
 - **Auto-refresh query summary notes every N seconds** - Periodic auto-refresh (default: 0 = disabled, max: 86400)
-- **Scan Period** - Seconds between scanning bursts (default: 11)
-- **Force sync after summary update** - Important for data consistency (default: true)
-- **Include completed TODOs** - Show done items in summary (default: false)
 
 ## Examples
 

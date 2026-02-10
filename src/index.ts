@@ -5,7 +5,7 @@ import { SummaryBuilder } from './builder';
 import { Settings } from './types';
 import { update_summary } from './summary';
 import { mark_current_line_as_done } from './mark_todo';
-import { regexes, regexTitles, summaryTitles } from './settings_tables';
+import { regexes } from './settings_tables';
 import { createQuerySummaryNote, isSummary } from './summary_note';
 import { hasQuerySummary, parseQuerySummary } from './query_summary';
 
@@ -18,13 +18,13 @@ const logger = Logger.create('inline-todo: Index');
 
 async function getSettings(): Promise<Settings> {
 	return {
-		scan_period_s: await joplin.settings.value('scanPeriod'),
-		scan_period_c: await joplin.settings.value('scanPeriodRequestCount'),
-		todo_type: regexes[await joplin.settings.value('regexType')],
-		summary_type: await joplin.settings.value('summaryType'),
-		sort_by: await joplin.settings.value('sortBy'),
+		scan_period_s: 0, // Not used for query summaries
+		scan_period_c: 999999, // Set high to effectively disable rate limiting
+		todo_type: regexes['list'], // Only metalist style is supported
+		summary_type: 'plain', // Not used for query summaries
+		sort_by: 'category', // Not used for query summaries
 		force_sync: await joplin.settings.value('forceSync'),
-		show_complete_todo: await joplin.settings.value('showCompletetodoitems'),
+		show_complete_todo: false, // Not used for query summaries
 		auto_refresh_summary: false, // Not used for query summaries
 		custom_editor: false, // Custom editor removed
 		open_reload: await joplin.settings.value('openReload'),
@@ -39,64 +39,11 @@ joplin.plugins.register({
 			iconName: 'fa fa-check'
 		});
 		await joplin.settings.registerSettings({
-			'regexType': {
-				value: 'list',
-				type: SettingItemType.String,
-				isEnum: true,
-				options: regexTitles,
-				section: 'settings.clsty.querytodo',
-				public: true,
-				label: 'Choose the inline TODO style (default is recommended)',
-			},
-			'summaryType': {
-				value: 'plain',
-				type: SettingItemType.String,
-				isEnum: true,
-				options: summaryTitles,
-				section: 'settings.clsty.querytodo',
-				public: true,
-				label: 'Choose a Summary Note Format. Check the project page for examples',
-			},
-			'sortBy': {
-				value: 'category',
-				type: SettingItemType.String,
-				isEnum: true,
-				options: {
-					'category': 'Category (Default)',
-					'date': 'Due Date'
-				},
-				section: 'settings.clsty.querytodo',
-				public: true,
-				label: 'Sort table display TODOs by',
-			},
-			'scanPeriod': {
-				value: 11,
-				type: SettingItemType.Int,
-				section: 'settings.clsty.querytodo',
-				public: true,
-				advanced: true,
-				minimum: 0,
-				maximum: 99,
-				step: 1,
-				label: 'Scan Period (how many seconds to wait between bursts of scanning)',
-			},
-			'scanPeriodRequestCount': {
-				value: 960,
-				type: SettingItemType.Int,
-				section: 'settings.clsty.querytodo',
-				public: true,
-				advanced: true,
-				minimum: 1,
-				maximum: 200,
-				step: 1,
-				label: 'Scan Period Allowed Requests (how many requests to make before taking a rest)',
-			},
 			'styleConfluenceTodos': {
 				value: true,
 				type: SettingItemType.Bool,
 				section: 'settings.clsty.querytodo',
 				public: true,
-				advanced: true,
 				label: 'Apply styling to metalist style todos in the markdown renderer (Restart Required)',
 			},
 			'forceSync': {
@@ -104,23 +51,13 @@ joplin.plugins.register({
 				type: SettingItemType.Bool,
 				section: 'settings.clsty.querytodo',
 				public: true,
-				advanced: true,
 				label: 'Force sync after summary note update (Important: do not un-check this)',
-			},
-			'showCompletetodoitems': {
-				value: false,
-				type: SettingItemType.Bool,
-				section: 'settings.clsty.querytodo',
-				public: true,
-				advanced: true,
-				label: 'Include complete TODO items in TODO summary (it might take long time/long list)',
 			},
 			'openReload': {
 				value: false,
 				type: SettingItemType.Bool,
 				section: 'settings.clsty.querytodo',
 				public: true,
-				advanced: true,
 				label: 'Refresh query summary notes when opening them',
 			},
 			'reloadPeriodSecond': {
@@ -128,7 +65,6 @@ joplin.plugins.register({
 				type: SettingItemType.Int,
 				section: 'settings.clsty.querytodo',
 				public: true,
-				advanced: true,
 				minimum: 0,
 				maximum: 86400,
 				step: 1,
