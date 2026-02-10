@@ -2,6 +2,8 @@
 
 Advanced TODO management for Joplin with JSON-based query summaries, filtering, sorting, and grouping.
 
+<img width="531" height="816" alt="image" src="https://github.com/user-attachments/assets/c4cb7d63-3337-4573-a1b4-5a09dfc42126" />
+
 **NOTE: This plugin is in early stage and should be considered alpha quality.**
 
 ## Features
