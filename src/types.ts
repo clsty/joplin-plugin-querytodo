@@ -209,5 +209,4 @@ export interface QuerySummaryConfig {
 	sortOptions?: SortOption[];
 	groupLevel?: number;
 	entryFormat?: string;
-	forceSyncWhenReload?: boolean;
 }

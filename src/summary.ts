@@ -102,9 +102,8 @@ async function setQuerySummaryBody(summaryBody: string, summary_id: string, old_
 				console.warn("Could not update summary note with api: " + summary_id);
 			});
 
-	// Use forceSyncWhenReload from config if available, default to true
-	const shouldSync = config?.forceSyncWhenReload !== false; // default is true
-	if (shouldSync) {
+	// Use the plugin's force_sync setting
+	if (settings.force_sync) {
 		await joplin.commands.execute('synchronize');
 	}
 }
