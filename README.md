@@ -2,7 +2,7 @@
 
 Flexible summaries of inline TODOs (to-do) with JSON-based query configs on filtering, sorting and grouping per summary note.
 
-<img alt="image" src="https://raw.githubusercontent.com/clsty/joplin-plugin-querytodo/refs/heads/assets/assets/screenshot.20260210.png" />
+![screenshot](https://raw.githubusercontent.com/clsty/joplin-plugin-querytodo/refs/heads/assets/assets/screenshot.20260210.png)
 
 **NOTE: This plugin is in early stage and should be considered alpha quality.**
 
@@ -22,7 +22,7 @@ Flexible summaries of inline TODOs (to-do) with JSON-based query configs on filt
 4. Create a query summary note: `Tools -> Create Query summary note`
 
 **Alternative method:**
-Download `*.jpl` from [pre-release]() and install it from Joplin `Tools -> Options -> Plugins`, install from file and select this jpl file.
+Download `*.jpl` from [Releases](https://github.com/clsty/joplin-plugin-querytodo/releases/tag/auto-release) and install it from Joplin `Tools -> Options -> Plugins`, install from file and select this jpl file.
 
 ## Quick Start
 
