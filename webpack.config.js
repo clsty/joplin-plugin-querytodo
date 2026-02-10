@@ -76,9 +76,9 @@ function fileSha256(filePath) {
 
 function currentGitInfo() {
 	try {
-		let branch = execSync('git rev-parse --abbrev-ref HEAD', { stdio: 'pipe' }).toString().trim();
+        let branch = execSync('git rev-parse --abbrev-ref HEAD', { stdio: 'pipe' }).toString().trim();
 		const commit = execSync('git rev-parse HEAD', { stdio: 'pipe' }).toString().trim();
-		if (branch === 'HEAD') branch = 'master';
+        if (branch === 'HEAD') branch = 'main';
 		return `${branch}:${commit}`;
 	} catch (error) {
 		const messages = error.message ? error.message.split('\n') : [''];
