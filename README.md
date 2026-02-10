@@ -2,20 +2,23 @@
 
 Advanced TODO management for Joplin with JSON-based query summaries, filtering, sorting, and grouping.
 
+**NOTE: This plugin is in early stage and should be considered alpha quality.**
+
 ## Features
 
 - **Write TODOs anywhere** in your notes using markdown checkbox syntax
 - **Query-based summaries** with JSON configuration for advanced filtering
 - **Multi-level sorting and grouping** with custom sort orders
 - **Customizable entry format** with template placeholders
-- **Auto-reload** configurable in plugin settings
 
 ## Installation
 
-1. Go to `Tools -> Options -> Plugins` (macOS: Joplin -> Preferences -> Plugins)
-2. Search for "Query TODO"
-3. Click Install and restart Joplin
-4. Create a query summary note: `Tools -> Create Query summary note`
+Download `*.jpl` from [pre-release]() and install it from Joplin `Tools -> Options -> Plugins`, install from file and select this jpl file.
+
+1. ~~Go to `Tools -> Options -> Plugins` (macOS: Joplin -> Preferences -> Plugins)~~
+2. ~~Search for "Query TODO"~~
+3. ~~Click Install and restart Joplin~~
+4. ~~Create a query summary note: `Tools -> Create Query summary note`~~
 
 ## Quick Start
 
@@ -27,7 +30,7 @@ Use metalist style (recommended):
 ```
 
 Components:
-- `@category` - Single category (required for plugin to detect)
+- `@category` - Single category (optional)
 - `+tag` - Multiple tags (optional)
 - `//YYYY-MM-DD` - Due date (optional)  
 - Checkbox state: `[ ]` = open, `[x]` = done
@@ -66,6 +69,7 @@ Filter TODOs by:
 - `TAG` - Filter by tag (`+urgent`, `+important`, etc.)
 - `STATUS` - Filter by status (`open`, `done`)
 - `NOTE` - Filter by note ID
+  - _Summary notes themselves are already excluded from TODO extraction to prevent self-referencing._
 - `NOTEBOOK` - Filter by notebook ID (supports `recursive: true`)
 - `AND` - All conditions must match
 - `OR` - At least one condition must match
@@ -160,13 +164,13 @@ Access via `Tools -> Options -> Query TODO`
 }
 ```
 
-## Notes
-
-- TODOs must include a category (`@category`) to be detected by the plugin
-- Summary notes are excluded from TODO extraction to prevent self-referencing
-- Use the toolbar refresh button (🔄) or menu item to manually refresh summaries
-- Auto-reload settings in plugin preferences apply to all query summary notes
-
 ## License
 
 MIT
+
+## Credits and History
+This plugin was originally a fork of [Inline TODOs](https://github.com/CalebJohn/joplin-inline-todo) in terms of GitHub repo. It's been largely modified since then. Note that Query TODO is not a "plus" version of Inline TODOs, but a very different plugin.
+
+This plugin has also been inspired by [Inline Tag Navigator](https://github.com/alondmnt/joplin-plugin-tag-navigator).
+
+I created Query TODO because I spent days tweaking and switching between Inline TODOs and Inline Tag Navigator, and unfortunately neither suited my needs.
