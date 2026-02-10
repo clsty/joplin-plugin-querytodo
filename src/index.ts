@@ -19,7 +19,7 @@ const logger = Logger.create('inline-todo: Index');
 async function getSettings(): Promise<Settings> {
 	return {
 		scan_period_s: 0, // Not used for query summaries
-		scan_period_c: 0, // Not used for query summaries
+		scan_period_c: 999999, // Set high to effectively disable rate limiting
 		todo_type: regexes['list'], // Only metalist style is supported
 		summary_type: 'plain', // Not used for query summaries
 		sort_by: 'category', // Not used for query summaries
