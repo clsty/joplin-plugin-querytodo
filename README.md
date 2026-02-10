@@ -1,6 +1,6 @@
 # Query TODO
 
-Advanced TODO management for Joplin with JSON-based query summaries, filtering, sorting, and grouping.
+Flexible summaries of inline TODOs (to-do) with JSON-based query configs on filtering, sorting and grouping per summary note.
 
 <img width="1041" height="1617" alt="image" src="https://github.com/user-attachments/assets/38834c0c-b454-495f-9cfe-b5cbddae3999" />
 
@@ -8,7 +8,7 @@ Advanced TODO management for Joplin with JSON-based query summaries, filtering, 
 
 ## Features
 
-- **Write TODOs anywhere** in your notes using markdown checkbox syntax
+- **Write inline TODOs anywhere** in your notes using markdown checkbox syntax
 - **Query-based summaries** with JSON configuration for advanced filtering
 - **Multi-level sorting and grouping** with custom sort orders
 - **Customizable entry format** with template placeholders
