@@ -2,7 +2,7 @@
 
 Flexible summaries of inline TODOs (to-do) with JSON-based query configs on filtering, sorting and grouping per summary note.
 
-<img width="1041" height="1617" alt="image" src="https://github.com/user-attachments/assets/38834c0c-b454-495f-9cfe-b5cbddae3999" />
+<img alt="image" src="https://raw.githubusercontent.com/clsty/joplin-plugin-querytodo/refs/heads/assets/assets/screenshot.20260210.png" />
 
 **NOTE: This plugin is in early stage and should be considered alpha quality.**
 
